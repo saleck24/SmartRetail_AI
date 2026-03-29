@@ -8,3 +8,6 @@ gradio
 matplotlib
 seaborn
 ipykernel
+lightgbm
+tabulate
+tensorflow-cpu

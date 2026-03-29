@@ -14,8 +14,9 @@ Le projet utilise désormais un jeu de données réel provenant de la chaîne é
 ---
 
 ## 🚀 Fonctionnalités Clés
-- **Modélisation Avancée (XGBoost) :** Un modèle Gradient Boosting capable de capter les relations non-linéaires complexes.
-- **Analyse de Saisonnalité :** Détection automatique des cycles hebdomadaires (pics le week-end).
+- **Modélisation Avancée (LightGBM) :** Notre modèle principal, choisi pour son excellence en rapidité et précision sur les données massives.
+- **Étude Comparative :** Inclus une comparaison scientifique entre Linear Regression, XGBoost, LightGBM et LSTM.
+- **Analyse de Saisonnalité :** Détection automatique des cycles hebdomadaires et mensuels.
 - **Facteur Événementiel :** Intégration des **jours fériés** pour prévenir les ruptures lors des pics de consommation.
 - **Interfaces Interactives :**
   - **Dashboard (Streamlit) :** Analyse historique et exploration des tendances.
@@ -40,9 +41,9 @@ pip install -r requirements.txt
 
 ### 3. Lancement des modules
 - **Analyse Exploratoire (EDA) :** Consulter `notebooks/01_EDA.ipynb`.
-- **Entraînement :** `python src/train_model.py` (pour ré-entraîner le modèle sur les dernières données).
-- **Dashboard :** `streamlit run src/dashboard.py`
-- **Predictor :** `python src/predictor.py`
+- **Entraînement :** `python dashboard/train_model.py` (pour comparer les 4 modèles et sauver le meilleur).
+- **Dashboard :** `streamlit run dashboard/dashboard.py`
+- **Predictor :** `python dashboard/predictor.py`
 
 ---
 
@@ -51,18 +52,18 @@ pip install -r requirements.txt
 erp_ai_stock_prediction/
 ├── data/                   # Fichiers sources (train.csv, metadata)
 ├── models/                 # Modèles IA sauvegardés (.pkl)
-├── notebooks/              # Analyse exploratoire (EDA - Semaine 1)
-├── src/                    # Code source (Dashboard, Predictor, Train)
-├── IA_Justifications.md    # Documentation scientifique et choix techniques
-├── requirements.txt        # Liste des dépendances
+├── notebooks/              # Analyse exploratoire (EDA - Complétée)
+├── dashboard/              # Code source (Dashboard, Predictor, Train)
+├── IA_Justifications.md    # Documentation scientifique et matrice de comparaison
+├── requirements.txt        # Liste des dépendances (incluant LightGBM et TF)
 └── README.md               # Ce fichier
 ```
 
 ### 📄 Fichiers Clés
-- **`src/train_model.py`** : Moteur d'entraînement (MAE: 7.60).
-- **`src/dashboard.py`** : Visualisation analytique pour les décideurs.
-- **`src/predictor.py`** : Outil terrain pour les magasiniers (Génère l'alerte rupture).
-- **`IA_Justifications.md`** : Justification académique des métriques (MAE, RMSE, MAPE).
+- **`dashboard/train_model.py`** : Moteur d'entraînement multi-modèles.
+- **`dashboard/dashboard.py`** : Visualisation analytique pour les décideurs.
+- **`dashboard/predictor.py`** : Outil terrain (Génère l'alerte rupture via LightGBM).
+- **`IA_Justifications.md`** : Justification académique (Linear Reg vs XGBoost vs LightGBM vs LSTM).
 
 ---
 

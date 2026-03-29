@@ -3,8 +3,8 @@ import pandas as pd
 import joblib
 import os
 
-# Chargement du modèle XGBoost Serialisé (.pkl)
-model_path = 'models/xgboost_stock_predictor.pkl'
+# Chargement du modèle LightGBM Serialisé (.pkl)
+model_path = 'models/lightgbm_stock_predictor.pkl'
 if os.path.exists(model_path):
     model = joblib.load(model_path)
 else:
@@ -31,7 +31,7 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
     Fonction appelée par l'interface web pour générer une prédiction et une recommandation.
     """
     if model is None:
-        return "Erreur: Le modèle XGBoost n'a pas été trouvé. Lancez d'abord src/train_model.py"
+        return "Erreur: Le modèle LightGBM n'a pas été trouvé. Lancez d'abord dashboard/train_model.py"
     
     # Validation des entrées numériques (doivent être strictement positives)
     if sales_lag_7 <= 0 or sales_rolling_mean_7 <= 0 or current_stock <= 0:
@@ -97,7 +97,7 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
         reco = f"**AUCUNE ACTION :** <span style='color: {color};'>Le stock couvre la demande prévue.</span>"
     
     # 8. Formatage du résultat affiché
-    result = f"PRÉVISION DE L'IA XGBOOST (Favorita) : {bold_units} unités seront vendues le {bold_date}.\n\n"
+    result = f"PRÉVISION DE L'IA LIGHTGBM (Favorita) : {bold_units} unités seront vendues le {bold_date}.\n\n"
     result += f"**Localisation :** Magasin {store_id} ({city})\n\n"
     result += f"**Produit :** {product_selection}\n\n"
     result += f"**ANALYSE DU STOCK** :\n\n"
