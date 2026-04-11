@@ -88,17 +88,17 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
     html_report = f"""
     <div style="border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background-color: #f9f9f9; text-align: center;">
         <h2 style="margin-top: 0; color: #333;">💡 Recommandation ERP</h2>
-        <p style="font-size: 16px; color: #555;">Prévision de l'IA pour le <b>{formatted_date}</b> :</p>
+        <p style="font-size: 16px; color: #555;">Prévision de l'IA pour le <b style="color: #333;">{formatted_date}</b> :</p>
         <h1 style="color: #007bff; font-size: 40px; margin: 10px 0;">{expected_demand} unités</h1>
         
         <div style="display: flex; justify-content: space-around; margin: 20px 0;">
             <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 45%;">
                 <p style="margin: 0; font-size: 14px; color: #888;">📦 Stock Actuel</p>
-                <h3 style="margin: 5px 0;">{int(current_stock)}</h3>
+                <h3 style="margin: 5px 0; color: #333;">{int(current_stock)}</h3>
             </div>
             <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 45%;">
                 <p style="margin: 0; font-size: 14px; color: #888;">📍 Localisation</p>
-                <h3 style="margin: 5px 0;">{city} <span style="font-size: 12px; font-weight: normal;">(Magasin {store_id})</span></h3>
+                <h3 style="margin: 5px 0; color: #333;">{city} <span style="font-size: 12px; font-weight: normal; color: #666;">(Magasin {store_id})</span></h3>
             </div>
         </div>
 
