@@ -84,3 +84,23 @@ Le projet utilise désormais le dataset **Corporación Favorita Grocery Sales**,
     - **Données Réelles :** Contrairement au dataset précédent, celui-ci provient d'une véritable chaîne de supermarchés nationale (Équateur).
     - **Richesse :** Il inclut 54 magasins, des dizaines de villes et des milliers de produits répartis par "Familles" (Alimentation, Ménage, etc.).
     - **Localisation :** La structure de ce dataset (Magasins, Produits, Villes) est identique à celle d'un distributeur en Mauritanie, ce qui prouve la viabilité du projet pour un usage local futur.
+
+## 7. Décisions UX/UI : Gestion du Calendrier et Limites Métier
+
+Une attention particulière a été portée à la conception du composant de calendrier dans le dashboard afin de répondre aux exigences d'un système ERP de qualité professionnelle :
+
+- **Le problème de l'absence de limite :** Autoriser l'utilisateur à sélectionner des dates infinies (ex: choisir l'année 2029) alors que la base de données s'arrête en 2017 témoigne d'un manque de validation de saisie (Poor UX). L'interface doit refléter la stricte réalité temporelle des opérations de l'entreprise étudiée.
+- **Le problème de la limite matérielle (échantillonnage) :** Pour des raisons d'optimisation (économie de RAM), l'application ne charge par défaut qu'un échantillon de données (les premières 100 000 lignes représentant janvier 2013). Si le calendrier était borné uniquement sur cet échantillon, l'utilisateur serait faussement bloqué sur un mois et l'outil subirait des crashs lors de n'importe quelle tentative d'exploration.
+- **La solution hybride implémentée :** J'ai séparé la **limite logique métier** de la **limite technique**. Le calendrier est formellement bloqué sur l'amplitude exacte de l'historique de Corporación Favorita (du 1er Janvier 2013 au 16 Août 2017) pour garantir la pertinence contextuelle devant le jury. Cependant, sa "valeur par défaut" au chargement cible intelligemment l'échantillon actuellement monté en mémoire. Cela résulte en une interface extrêmement robuste, qui s'affiche instantanément au démarrage sans erreur, tout en matérialisant parfaitement la gestion des dates à haute échelle.
+
+## 8. Fonctionnalité BI : Analyse de Scénario (What-If Analysis)
+
+Dans le tableau de bord (Streamlit), un curseur interactif de **Simulation d'Impact Événementiel** a été ajouté. Il s'agit d'un outil d'analyse "What-If" (Analyse de Scénario), une fonctionnalité de pointe très prisée dans les systèmes intelligents (Business Intelligence).
+
+### A. Justification Opérationnelle (Métier)
+En gestion de chaîne logistique (Supply Chain), le passé ne reflète pas toujours parfaitement la demande future. Si un gestionnaire de magasin prévoit une énorme campagne publicitaire, une pénurie annoncée chez un concurrent, ou un jour férié inattendu, il doit pouvoir simuler ces fluctuations.
+- **Principe :** Le curseur lui permet d'injecter facilement un biais hypothétique (ex: hausse de 30% des ventes).
+- **Conséquence :** Les KPIs se recalculent instantanément sur son écran. Cela lui donne une perspective quantitative de l'effort de réapprovisionnement supplémentaire à fournir avant même que l'événement ne se produise (on passe de l'analytique descriptive à la préparation prescriptive).
+
+### B. Transparence Technique
+L'algorithme de simulation a été conçu pour être hautement réactif. Une fois les données filtrées, l'application applique la modulation mathématique `df["sales"] * (1 + simulate / 100)` directement en mémoire sur l'ensemble du dataset affiché. Ce mécanisme met immédiatement à jour les objets visuels Plotly et Pandas, démontrant au jury que le dashboard n'est pas un banal afficheur de CSV, mais un véritable moteur de manipulation interactif.

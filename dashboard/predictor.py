@@ -3,7 +3,9 @@ import pandas as pd
 import joblib
 import os
 
-# Chargement du modèle LightGBM Serialisé (.pkl)
+# ---------------------------
+# CONFIGURATION & LOADER
+# ---------------------------
 model_path = 'models/lightgbm_stock_predictor.pkl'
 if os.path.exists(model_path):
     model = joblib.load(model_path)
@@ -11,57 +13,43 @@ else:
     model = None
 
 # Chargement des métadonnées pour une interface réaliste
-items_df = pd.read_csv("data/items.csv")
-stores_df = pd.read_csv("data/stores.csv")
-holidays_df = pd.read_csv("data/holidays_events.csv")
-holidays_df['date'] = pd.to_datetime(holidays_df['date'])
+try:
+    items_df = pd.read_csv("data/items.csv")
+    stores_df = pd.read_csv("data/stores.csv")
+    holidays_df = pd.read_csv("data/holidays_events.csv")
+    holidays_df['date'] = pd.to_datetime(holidays_df['date'])
 
-# On crée une liste de produits (ID - Famille) pour le dropdown
-# On prend les 100 premiers produits pour garder l'interface fluide
-item_choices = (items_df['item_nbr'].astype(str) + " - " + items_df['family']).head(100).tolist()
-
-# On crée une liste de magasins (ID - Ville) pour le dropdown
-store_choices = (stores_df['store_nbr'].astype(str) + " - " + stores_df['city']).tolist()
-
-# On crée un dictionnaire des villes pour l'affichage dans le rapport
-store_cities = dict(zip(stores_df['store_nbr'], stores_df['city']))
+    item_choices = (items_df['item_nbr'].astype(str) + " - " + items_df['family']).head(200).tolist()
+    store_choices = (stores_df['store_nbr'].astype(str) + " - " + stores_df['city']).tolist()
+    store_cities = dict(zip(stores_df['store_nbr'], stores_df['city']))
+except Exception:
+    item_choices = ["1 - GROCERY", "2 - BEVERAGES"]
+    store_choices = ["1 - Quito", "2 - Guayaquil"]
+    store_cities = {1: "Quito", 2: "Guayaquil"}
+    holidays_df = pd.DataFrame(columns=["date"])
 
 def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_rolling_mean_7, current_stock):
     """
     Fonction appelée par l'interface web pour générer une prédiction et une recommandation.
     """
     if model is None:
-        return "Erreur: Le modèle LightGBM n'a pas été trouvé. Lancez d'abord dashboard/train_model.py"
+        return "<h3 style='color:red;'>Erreur: Le modèle n'a pas été trouvé. Lancez d'abord dashboard/train_model.py</h3>"
     
-    # Validation des entrées numériques (doivent être strictement positives)
     if sales_lag_7 <= 0 or sales_rolling_mean_7 <= 0 or current_stock <= 0:
-        return "Erreur: Les valeurs de ventes et de stock doivent être strictement supérieures à 0 pour cette simulation."
+        return "<h3 style='color:orange;'>Avertissement: Les valeurs doivent être supérieures à 0.</h3>"
 
-    # 1. Extraction des IDs depuis les sélections "ID - Nom"
     try:
-        store_id = int(store_selection.split(" - ")[0])
-    except:
-        return "Erreur dans la sélection du magasin."
-        
-    try:
-        item = int(product_selection.split(" - ")[0])
-    except:
-        return "Erreur dans la sélection du produit."
-
-    # 2. Parsing de la date saisie
-    try:
+        store_id = int(float(store_selection.split(" - ")[0]))
+        item = int(float(product_selection.split(" - ")[0]))
         dt = pd.to_datetime(date)
     except:
-        return "Erreur: Format de date invalide."
+        return "<h3>Erreur dans la saisie des données.</h3>"
     
     month = dt.month
     dayofweek = dt.dayofweek
     is_weekend = 1 if dayofweek in [5, 6] else 0
-    
-    # Vérification si c'est un jour férié
     is_holiday = 1 if dt in holidays_df['date'].values else 0
     
-    # 3. Re-création de la ligne de "Features" exactement comme lors de l'entraînement
     input_data = pd.DataFrame({
         'store': [store_id],
         'item': [item],
@@ -73,98 +61,137 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
         'sales_rolling_mean_7': [sales_rolling_mean_7]
     })
     
-    # 4. Appel du modèle IA
     pred = model.predict(input_data)[0]
     expected_demand = max(0, int(round(pred)))
-    
-    # 5. Récupération de la ville
     city = store_cities.get(store_id, "Inconnue")
     
-    # 6. Formatage de la date (dd/mm/yyyy hh:mm:ss) et Bolding des métriques
-    formatted_date = dt.strftime('%d/%m/%Y %H:%M:%S')
-    bold_units = f"**{expected_demand}**"
-    bold_date = f"**{formatted_date}**"
-    
-    # 7. Règle Métier ERP : Recommandation & Couleurs (HTML compatible Markdown)
+    # Génération du HTML enrichi pour le rapport
     if current_stock < expected_demand:
-        color = "red"
-        alerte = f"<span style='color: {color}; font-weight: bold;'>ALERTE RUPTURE IMMINENTE</span>"
+        status_color = "#ff4d4d"
+        status_icon = "🚨"
+        status_text = "RUPTURE IMMINENTE"
         a_commander = expected_demand - current_stock
-        reco = f"**ACTION REQUISE :** <span style='color: {color};'>Commander en urgence **{a_commander}** unités aujourd'hui.</span>"
+        reco = f"Commander en urgence <b>{a_commander}</b> unités."
+    elif current_stock == expected_demand:
+        status_color = "#ffa64d"
+        status_icon = "⚠️"
+        status_text = "FLUX TENDU"
+        reco = f"Le stock couvrira exactement la demande. Surveillez de près."
     else:
-        color = "green"
-        alerte = f"<span style='color: {color}; font-weight: bold;'>STOCK SUFFISANT</span>"
-        reco = f"**AUCUNE ACTION :** <span style='color: {color};'>Le stock couvre la demande prévue.</span>"
-    
-    # 8. Formatage du résultat affiché
-    result = f"PRÉVISION DE L'IA LIGHTGBM (Favorita) : {bold_units} unités seront vendues le {bold_date}.\n\n"
-    result += f"**Localisation :** Magasin {store_id} ({city})\n\n"
-    result += f"**Produit :** {product_selection}\n\n"
-    result += f"**ANALYSE DU STOCK** :\n\n"
-    result += f"**- Stock Actuel** : {int(current_stock)}\n\n"
-    result += f"**- Statut** : {alerte}\n\n"
-    result += f"**RECOMMANDATION ERP** :\n\n{reco}"
-    
-    return result
+        status_color = "#2eb82e"
+        status_icon = "✅"
+        status_text = "STOCK SUFFISANT"
+        reco = f"Aucune action requise."
 
-# Configuration de l'interface Web (Gradio Blocks - Compatible v6.0+)
-with gr.Blocks() as demo:
+    formatted_date = dt.strftime('%d %b %Y')
     
-    with gr.Column():
-        # Header
-        gr.Markdown(
-            """
-            # ERP Intelligent : Analyse de Stock Real-World
-            ### Simulation sur le Dataset Corporación Favorita (Équateur)
-            ---
-            """
-        )
+    html_report = f"""
+    <div style="border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background-color: #f9f9f9; text-align: center;">
+        <h2 style="margin-top: 0; color: #333;">💡 Recommandation ERP</h2>
+        <p style="font-size: 16px; color: #555;">Prévision de l'IA pour le <b>{formatted_date}</b> :</p>
+        <h1 style="color: #007bff; font-size: 40px; margin: 10px 0;">{expected_demand} unités</h1>
         
-        with gr.Row():
-            # Colonne de Gauche : Saisie des données
-            with gr.Column(scale=1):
-                gr.Markdown("### Paramètres de Simulation")
-                with gr.Group():
-                    # Utilisation d'un type "date" pour afficher le calendrier
-                    date_input = gr.DateTime(label="Date de prévision", value="2017-08-16", type="string")
-                    with gr.Row():
-                        store_input = gr.Dropdown(label="Sélection du Magasin", choices=store_choices, value=store_choices[0])
-                        # Dropdown avec Noms réels des produits
-                        item_input = gr.Dropdown(label="Sélection du Produit (ID - Famille)", choices=item_choices, value=item_choices[0])
-                
-                gr.Markdown("### Historique Récent")
-                with gr.Group():
-                    with gr.Row():
-                        lag_input = gr.Number(label="Ventes à J-7 (kg/u)", value=10, minimum=0.1)
-                        roll_input = gr.Number(label="Moyenne 7j (kg/u)", value=12, minimum=0.1)
-                    stock_input = gr.Number(label="Stock Physique Actuel", value=5, minimum=0.1)
-                
-                predict_btn = gr.Button("Générer l'Analyse prédictive", variant="primary")
+        <div style="display: flex; justify-content: space-around; margin: 20px 0;">
+            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 45%;">
+                <p style="margin: 0; font-size: 14px; color: #888;">📦 Stock Actuel</p>
+                <h3 style="margin: 5px 0;">{int(current_stock)}</h3>
+            </div>
+            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 45%;">
+                <p style="margin: 0; font-size: 14px; color: #888;">📍 Localisation</p>
+                <h3 style="margin: 5px 0;">{city} <span style="font-size: 12px; font-weight: normal;">(Magasin {store_id})</span></h3>
+            </div>
+        </div>
 
-            # Colonne de Droite : Résultat et Recommandation
-            with gr.Column(scale=1):
-                gr.Markdown("### Rapport de Réapprovisionnement")
-                output_report = gr.Markdown(
-                    "Saisissez les données et cliquez sur le bouton pour obtenir une recommandation."
-                )
-                
-                gr.Markdown(
-                    """
-                    > **Note technique :** Ce module est désormais configuré pour le dataset **Favorita**. 
-                    > Il utilise l'historique réel de consommation pour prédire les besoins de stock par magasin et par catégorie.
-                    """
-                )
+        <div style="background-color: {status_color}; color: white; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <h3 style="margin: 0;">{status_icon} STATUT : {status_text}</h3>
+            <p style="margin: 5px 0 0 0; font-size: 16px;">{reco}</p>
+        </div>
+    </div>
+    """
+    return html_report
 
-    # Logique de clic
+# ---------------------------
+# INTERFACE WEBU GRADIO PRO
+# ---------------------------
+# Thème personnalisé Soft avec quelques tweaks
+custom_theme = gr.themes.Soft(
+    primary_hue="blue",
+    secondary_hue="slate",
+).set(
+    button_primary_background_fill="*primary_500",
+    button_primary_background_fill_hover="*primary_600",
+)
+
+with gr.Blocks(title="Pro ERP AI Predictor") as demo:
+    
+    # En-tête
+    gr.HTML(
+        """
+        <div style="text-align: center; padding: 20px; background-color: #0b1f38; border-radius: 10px; margin-bottom: 20px;">
+            <h1 style="color: white; margin: 0;">🤖 ERP AI Predictor Pro</h1>
+            <p style="color: #a0aec0; margin-top: 5px; font-size: 16px;">Analyse LightGBM des stocks corporatifs (Favorita Dataset)</p>
+        </div>
+        """
+    )
+    
+    with gr.Tabs():
+        # TAB 1 : Simulateur
+        with gr.TabItem("🎯 Simulateur Analytique"):
+            with gr.Row():
+                # Colonne 1 : Entrées Utilisateur
+                with gr.Column(scale=4):
+                    gr.Markdown("### ⚙️ Paramètres Opérationnels")
+                    
+                    with gr.Group():
+                        date_input = gr.DateTime(label="📅 Date de prévision cible", value="2017-08-16", type="string")
+                        with gr.Row():
+                            store_input = gr.Dropdown(label="🏪 Magasin", choices=store_choices, value=store_choices[0])
+                            item_input = gr.Dropdown(label="📦 Catégorie Produit", choices=item_choices, value=item_choices[0])
+                    
+                    gr.Markdown("### 📊 Variables Métiers Récents")
+                    with gr.Group():
+                        with gr.Row():
+                            lag_input = gr.Number(label="⏮️ Ventes J-7 (u)", value=15)
+                            roll_input = gr.Number(label="📉 Moyenne 7j (u)", value=12.5)
+                        stock_input = gr.Number(label="📦 Stock Physique Disponible (u)", value=10)
+                    
+                    predict_btn = gr.Button("🚀 Lancer l'Analyse Prédictive", variant="primary", size="lg")
+                
+                # Colonne 2 : Résultat de l'IA
+                with gr.Column(scale=5):
+                    gr.Markdown("### 📋 Rapport d'Intelligence Artificielle")
+                    output_html = gr.HTML(
+                        """
+                        <div style="border: 2px dashed #ccc; border-radius: 10px; padding: 40px; text-align: center; color: #888;">
+                            <h3>En attente de simulation...</h3>
+                            <p>Veuillez entrer les paramètres à gauche et lancer la prédiction.</p>
+                        </div>
+                        """
+                    )
+        
+        # TAB 2 : Info / Doc
+        with gr.TabItem("📖 Informations du Modèle"):
+            gr.Markdown(
+                """
+                ### 🏗️ Architecture du Modèle Prédictif
+                Ce Predictor utilise un modèle **LightGBM (Gradient Boosting Machine)** performant pour la régression.
+                
+                - **Données d'entraînement** : +3 millions de lignes de transactions réelles (Corporación Favorita).
+                - **Features principales** : Saisonnalité (Mois, Jour J/F), Jours Fériés nationaux, Ventes Lag et Moyennes Mobiles (7 jours).
+                - **Objectif** : Anticiper la demande exacte afin de réduire les coûts de stockage inutiles et de prévenir les ruptures dommageables au chiffre d'affaires.
+                """
+            )
+
+    # Actions
     predict_btn.click(
         fn=predict_stock,
         inputs=[date_input, store_input, item_input, lag_input, roll_input, stock_input],
-        outputs=output_report
+        outputs=output_html
     )
 
 if __name__ == "__main__":
     demo.launch(
-        share=False, 
-        theme=gr.themes.Soft(), 
-        css=".container { max-width: 900px; margin: auto; padding: 20px; }"
+        share=False,
+        server_port=7860,
+        theme=custom_theme
     )
