@@ -2,10 +2,13 @@ import gradio as gr
 import pandas as pd
 import joblib
 import os
+import requests
 
 # ---------------------------
 # CONFIGURATION & LOADER
 # ---------------------------
+API_URL = os.environ.get("API_URL", None)
+
 model_path = 'models/lightgbm_stock_predictor.pkl'
 if os.path.exists(model_path):
     model = joblib.load(model_path)
@@ -32,9 +35,6 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
     """
     Fonction appelée par l'interface web pour générer une prédiction et une recommandation.
     """
-    if model is None:
-        return "<h3 style='color:red;'>Erreur: Le modèle n'a pas été trouvé. Lancez d'abord dashboard/train_model.py</h3>"
-    
     if sales_lag_7 <= 0 or sales_rolling_mean_7 <= 0 or current_stock <= 0:
         return "<h3 style='color:orange;'>Avertissement: Les valeurs doivent être supérieures à 0.</h3>"
 
@@ -45,25 +45,49 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
     except:
         return "<h3>Erreur dans la saisie des données.</h3>"
     
-    month = dt.month
-    dayofweek = dt.dayofweek
-    is_weekend = 1 if dayofweek in [5, 6] else 0
-    is_holiday = 1 if dt in holidays_df['date'].values else 0
-    
-    input_data = pd.DataFrame({
-        'store': [store_id],
-        'item': [item],
-        'month': [month],
-        'dayofweek': [dayofweek],
-        'is_weekend': [is_weekend],
-        'is_holiday': [is_holiday],
-        'sales_lag_7': [sales_lag_7],
-        'sales_rolling_mean_7': [sales_rolling_mean_7]
-    })
-    
-    pred = model.predict(input_data)[0]
-    expected_demand = max(0, int(round(pred)))
     city = store_cities.get(store_id, "Inconnue")
+
+    if API_URL:
+        # Consommation de l'API FastAPI (Architecture Microservices)
+        payload = {
+            "date": dt.strftime('%Y-%m-%d'),
+            "store_id": store_id,
+            "item_id": item,
+            "sales_lag_7": sales_lag_7,
+            "sales_rolling_mean_7": sales_rolling_mean_7
+        }
+        try:
+            response = requests.post(API_URL, json=payload)
+            if response.status_code == 200:
+                expected_demand = response.json().get("expected_demand", 0)
+            else:
+                return f"<h3 style='color:red;'>Erreur API ({response.status_code}): {response.text}</h3>"
+        except Exception as e:
+            return f"<h3 style='color:red;'>Erreur de connexion à l'API: {str(e)}</h3>"
+    else:
+        # Fallback local (Architecture Monolithique originale)
+        if model is None:
+            return "<h3 style='color:red;'>Erreur: Le modèle n'a pas été trouvé et l'API n'est pas configurée. Lancez d'abord dashboard/train_model.py</h3>"
+        
+        month = dt.month
+        dayofweek = dt.dayofweek
+        is_weekend = 1 if dayofweek in [5, 6] else 0
+        is_holiday = 1 if dt in holidays_df['date'].values else 0
+        
+        input_data = pd.DataFrame({
+            'store': [store_id],
+            'item': [item],
+            'month': [month],
+            'dayofweek': [dayofweek],
+            'is_weekend': [is_weekend],
+            'is_holiday': [is_holiday],
+            'sales_lag_7': [sales_lag_7],
+            'sales_rolling_mean_7': [sales_rolling_mean_7]
+        })
+        
+        pred = model.predict(input_data)[0]
+        expected_demand = max(0, int(round(pred)))
+    
     
     # Génération du HTML enrichi pour le rapport
     if current_stock < expected_demand:
@@ -122,7 +146,7 @@ custom_theme = gr.themes.Soft(
     button_primary_background_fill_hover="*primary_600",
 )
 
-with gr.Blocks(title="Pro ERP AI Predictor") as demo:
+with gr.Blocks(title="Pro ERP AI Predictor", theme=custom_theme) as demo:
     
     # En-tête
     gr.HTML(
@@ -192,6 +216,6 @@ with gr.Blocks(title="Pro ERP AI Predictor") as demo:
 if __name__ == "__main__":
     demo.launch(
         share=False,
-        server_port=7860,
-        theme=custom_theme
+        server_name="0.0.0.0",
+        server_port=7860
     )

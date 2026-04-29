@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: erp_api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    # Pour recharger à chaud en dev si besoin
+    # volumes:
+    #   - ./api:/app/api
+    #   - ./models:/app/models
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: erp_streamlit
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+    command: ["streamlit", "run", "dashboard/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    depends_on:
+      - api
+
+  gradio:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: erp_gradio
+    ports:
+      - "7860:7860"
+    restart: unless-stopped
+    command: ["python", "dashboard/predictor.py"]
+    # On précise des variables d'environnement si l'on adapte predictor.py pour utiliser l'API
+    environment:
+      - API_URL=http://api:8000/predict
+    depends_on:
+      - api

@@ -1,0 +1,25 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Installation de libgomp1 (nécessaire pour LightGBM)
+RUN apt-get update && apt-get install -y libgomp1 && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copier le code source du dashboard (Gradio et Streamlit)
+COPY dashboard/ ./dashboard/
+
+# Copier les données
+COPY data/ ./data/
+
+# Copier le modèle (au cas où les dashboards actuels continuent de l'utiliser en local)
+COPY models/ ./models/
+
+# Exposer les ports : Streamlit (8501), Gradio (7860)
+EXPOSE 8501
+EXPOSE 7860
+
+# La commande par défaut (peut être surchargée dans le docker-compose)
+CMD ["streamlit", "run", "dashboard/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]

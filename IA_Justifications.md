@@ -104,3 +104,22 @@ En gestion de chaîne logistique (Supply Chain), le passé ne reflète pas toujo
 
 ### B. Transparence Technique
 L'algorithme de simulation a été conçu pour être hautement réactif. Une fois les données filtrées, l'application applique la modulation mathématique `df["sales"] * (1 + simulate / 100)` directement en mémoire sur l'ensemble du dataset affiché. Ce mécanisme met immédiatement à jour les objets visuels Plotly et Pandas, démontrant au jury que le dashboard n'est pas un banal afficheur de CSV, mais un véritable moteur de manipulation interactif.
+
+## 9. Architecture Microservices : API FastAPI et Déploiement Docker
+
+Pour le déploiement de l'application, nous avons migré d'une approche "monolithique" vers une **Architecture Microservices** moderne, orchestrée via `docker-compose`.
+
+### A. La Séparation des Responsabilités (Separation of Concerns)
+Dans la version initiale, le modèle IA était directement chargé en mémoire par les interfaces frontend (Gradio / Streamlit). Bien que fonctionnel pour un prototype, ce design présente des limites en production. 
+Nous avons donc isolé l'IA dans sa propre **API FastAPI** dédiée (`api/main.py`). Le frontend (Gradio) ne charge plus le modèle : il envoie une requête HTTP `POST` au backend et affiche simplement la réponse.
+
+**Justification devant un jury :**
+1. **Scalabilité Indépendante :** Si l'interface web reçoit un pic de trafic, nous pouvons multiplier les conteneurs du front-end sans devoir recharger le lourd modèle IA à chaque fois.
+2. **Interopérabilité :** L'API `FastAPI` offre des endpoints standards (REST). L'ERP d'une entreprise (développé en Java, C# ou PHP) peut interroger notre IA de prédiction sans avoir besoin de réécrire le code en Python. L'IA devient un service "Agnostique".
+3. **Sécurité et Maintenance :** Le code métier complexe et les données de prédiction restent encapsulés et protégés côté serveur backend.
+
+### B. Le Choix de Docker et Docker Compose
+Nous avons conteneurisé le projet avec `Dockerfile.api` et `Dockerfile.dashboard`.
+
+**Justification devant un jury :**
+L'utilisation de Docker résout le célèbre problème du "Ça marche sur ma machine". Il garantit une reproductibilité parfaite. Que le projet soit déployé sur un ordinateur de l'université, un serveur AWS, ou chez un client en Mauritanie, les dépendances (Python 3.9, LightGBM, FastAPI) et les ports réseaux sont scellés dans l'image. L'orchestration avec `docker-compose` permet de démarrer tout l'écosystème en une seule commande professionnelle, démontrant une grande maturité DevOps.

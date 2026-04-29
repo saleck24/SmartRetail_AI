@@ -11,3 +11,10 @@ ipykernel
 lightgbm
 tabulate
 tensorflow-cpu
+fastapi
+uvicorn
+pydantic
+httpx
+python-multipart
+huggingface_hub==0.24.2
+plotly

@@ -17,12 +17,16 @@ st.markdown("Analyse des tendances de ventes réelles d'une chaîne de supermarc
 # ---------------------------
 @st.cache_data
 def load_data():
-    # Sécurisation en cas d'absence du fichier pour la démo
-    if not os.path.exists("data/train.csv"):
+    # Logique de chargement hybride (Local vs Docker)
+    if os.path.exists("data/train.csv"):
+        file_path = "data/train.csv"
+    elif os.path.exists("data/train_sample.csv"):
+        file_path = "data/train_sample.csv"
+    else:
         return pd.DataFrame()
 
-    # Chargement d'un échantillon pour la fluidité (1 million de lignes)
-    df = pd.read_csv("data/train.csv", nrows=100000)
+    # Chargement de l'échantillon (100k lignes pour la fluidité)
+    df = pd.read_csv(file_path, nrows=100000)
     df['date'] = pd.to_datetime(df['date'])
     
     # Chargement des métadonnées
