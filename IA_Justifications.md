@@ -118,8 +118,40 @@ Nous avons donc isolé l'IA dans sa propre **API FastAPI** dédiée (`api/main.p
 2. **Interopérabilité :** L'API `FastAPI` offre des endpoints standards (REST). L'ERP d'une entreprise (développé en Java, C# ou PHP) peut interroger notre IA de prédiction sans avoir besoin de réécrire le code en Python. L'IA devient un service "Agnostique".
 3. **Sécurité et Maintenance :** Le code métier complexe et les données de prédiction restent encapsulés et protégés côté serveur backend.
 
-### B. Le Choix de Docker et Docker Compose
+### C. Sécurité Avancée : Gestion Dynamique des Clés API (API Keys)
+
+Pour sécuriser nos endpoints métier (notamment `/predict`), nous avons implémenté une couche de sécurité robuste basée sur des **API Keys dynamiques** via FastAPI Security (`APIKeyHeader`).
+- **Phase de développement (TP) :** Une clé statique par défaut (`secret-token-123` ou via variable d'environnement) est acceptée pour faciliter les tests et la démo en local.
+- **Phase de production (Projet Final) :** Un endpoint dédié (`/auth/generate-key`) permet de générer à la volée des clés cryptographiques sécurisées (`secrets.token_urlsafe(32)`). Ces clés sont stockées dynamiquement en mémoire (ou en base de données dans une itération future). 
+- **Validation :** Toute requête vers `/predict` dépourvue d'un header `X-API-Key` valide se voit rejetée avec une erreur `401 Unauthorized`. Cette approche empêche l'utilisation non autorisée du modèle, protégeant ainsi l'infrastructure IA contre les abus.
+
+**Explication du Flux Machine-to-Machine (M2M) pour la soutenance :**
+Il est important de distinguer la *sécurité de l'Interface Utilisateur* de la *sécurité de l'API*. L'interface Gradio ne demande pas de mot de passe à l'employé car elle simule l'environnement interne et sécurisé de l'entreprise. En revanche, lorsqu'une prédiction est demandée, Gradio (le front-end) glisse silencieusement l'API Key dans les *Headers HTTP* et s'authentifie automatiquement auprès de FastAPI (le back-end). L'API Key sert donc uniquement à empêcher des systèmes ou développeurs tiers non autorisés de consommer les ressources de notre intelligence artificielle.
+
+**Le paradoxe du "Guichet Ouvert" (Génération de Clé) :**
+Vous remarquerez que la route `/auth/generate-key` est publiquement accessible. C'est un choix architectural totalement assumé (le paradoxe de "l'œuf et de la poule"). Si la route qui génère la clé nécessitait elle-même une clé, aucun développeur partenaire ne pourrait obtenir son premier accès. L'authentification stricte protège uniquement la "salle des coffres" (la route `/predict` qui sollicite le CPU pour l'IA), tout en laissant le "guichet" (`/auth/generate-key`) accessible pour distribuer les jetons d'accès.
+
+### D. Le Choix de Docker et Docker Compose
 Nous avons conteneurisé le projet avec `Dockerfile.api` et `Dockerfile.dashboard`.
 
 **Justification devant un jury :**
 L'utilisation de Docker résout le célèbre problème du "Ça marche sur ma machine". Il garantit une reproductibilité parfaite. Que le projet soit déployé sur un ordinateur de l'université, un serveur AWS, ou chez un client en Mauritanie, les dépendances (Python 3.9, LightGBM, FastAPI) et les ports réseaux sont scellés dans l'image. L'orchestration avec `docker-compose` permet de démarrer tout l'écosystème en une seule commande professionnelle, démontrant une grande maturité DevOps.
+
+## 10. 🎓 Guide pour le Jour J (Soutenance)
+
+Voici le scénario idéal pour présenter votre projet au jury une fois les services lancés (via `docker-compose up`) :
+
+### 1. Démontrer l'API et la Sécurité (Backend)
+- **Lien :** `http://localhost:8000/docs` (Interface Swagger de FastAPI).
+- **Générer une clé :** Ouvrez l'endpoint `/auth/generate-key`. Cliquez sur *Try it out* puis *Execute*. Copiez la `api_key` générée (qui simule le token d'un système ERP).
+- **Sécuriser l'API :** Remontez en haut de la page, cliquez sur le bouton vert **Authorize**, collez la clé dans le champ `X-API-Key` et validez. L'API est désormais déverrouillée et l'endpoint `/predict` peut être testé manuellement de manière sécurisée.
+
+### 2. Démontrer le Dashboard Analytique (Business Intelligence)
+- **Lien :** `http://localhost:8501` (Streamlit).
+- **Objectif :** Montrer votre maîtrise des données (Analyse Descriptive et Prescriptive).
+- **À montrer :** Naviguez dans les graphiques de saisonnalité pour prouver la complexité du dataset. Utilisez ensuite le **Curseur de Simulation d'Impact (What-If Analysis)** pour montrer comment les données se mettent à jour dynamiquement lorsqu'on simule une hausse inattendue de la demande (ex: événement sportif, promo).
+
+### 3. Démontrer le Simulateur Opérationnel (Predictor ERP)
+- **Lien :** `http://localhost:7860` (Gradio).
+- **Objectif :** Montrer le cas d'usage final pour un gestionnaire de magasin.
+- **À montrer :** L'interface agit comme le front-end d'un système ERP. Saisissez une date, choisissez un magasin et entrez un stock physique délibérément bas (ex: 5 unités). Lancez la prédiction. Montrez comment l'interface appelle silencieusement l'API sécurisée et affiche un **rapport de recommandation avec une alerte (Rupture / Flux tendu / Stock suffisant)** en fonction du modèle LightGBM.

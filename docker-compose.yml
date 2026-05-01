@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     build:
@@ -9,10 +7,10 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
-    # Pour recharger à chaud en dev si besoin
-    # volumes:
-    #   - ./api:/app/api
-    #   - ./models:/app/models
+    # Pour recharger à chaud en dev
+    volumes:
+      - ./api:/app/api
+      - ./models:/app/models
 
   streamlit:
     build:
@@ -22,6 +20,9 @@ services:
     ports:
       - "8501:8501"
     restart: unless-stopped
+    volumes:
+      - ./dashboard:/app/dashboard
+      - ./data:/app/data
     command: ["streamlit", "run", "dashboard/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
     depends_on:
       - api
@@ -34,9 +35,14 @@ services:
     ports:
       - "7860:7860"
     restart: unless-stopped
+    volumes:
+      - ./dashboard:/app/dashboard
+      - ./models:/app/models
+      - ./data:/app/data
     command: ["python", "dashboard/predictor.py"]
     # On précise des variables d'environnement si l'on adapte predictor.py pour utiliser l'API
     environment:
       - API_URL=http://api:8000/predict
+      - GRADIO_SERVER_NAME=0.0.0.0
     depends_on:
       - api

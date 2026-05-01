@@ -8,6 +8,7 @@ import requests
 # CONFIGURATION & LOADER
 # ---------------------------
 API_URL = os.environ.get("API_URL", None)
+API_KEY = os.environ.get("API_KEY", "secret-token-123")
 
 model_path = 'models/lightgbm_stock_predictor.pkl'
 if os.path.exists(model_path):
@@ -57,7 +58,8 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
             "sales_rolling_mean_7": sales_rolling_mean_7
         }
         try:
-            response = requests.post(API_URL, json=payload)
+            headers = {"X-API-Key": API_KEY}
+            response = requests.post(API_URL, json=payload, headers=headers)
             if response.status_code == 200:
                 expected_demand = response.json().get("expected_demand", 0)
             else:
@@ -146,7 +148,7 @@ custom_theme = gr.themes.Soft(
     button_primary_background_fill_hover="*primary_600",
 )
 
-with gr.Blocks(title="Pro ERP AI Predictor", theme=custom_theme) as demo:
+with gr.Blocks(title="Pro ERP AI Predictor") as demo:
     
     # En-tête
     gr.HTML(
@@ -200,7 +202,7 @@ with gr.Blocks(title="Pro ERP AI Predictor", theme=custom_theme) as demo:
                 ### 🏗️ Architecture du Modèle Prédictif
                 Ce Predictor utilise un modèle **LightGBM (Gradient Boosting Machine)** performant pour la régression.
                 
-                - **Données d'entraînement** : +3 millions de lignes de transactions réelles (Corporación Favorita).
+                - **Données d'entraînement** : Échantillon représentatif de **1 million de lignes** de transactions réelles (Corporación Favorita, année 2017) pour garantir un apprentissage rapide et performant.
                 - **Features principales** : Saisonnalité (Mois, Jour J/F), Jours Fériés nationaux, Ventes Lag et Moyennes Mobiles (7 jours).
                 - **Objectif** : Anticiper la demande exacte afin de réduire les coûts de stockage inutiles et de prévenir les ruptures dommageables au chiffre d'affaires.
                 """
@@ -214,8 +216,12 @@ with gr.Blocks(title="Pro ERP AI Predictor", theme=custom_theme) as demo:
     )
 
 if __name__ == "__main__":
+    # En local (venv), on utilise 127.0.0.1 pour que le lien généré soit cliquable (localhost).
+    # Dans Docker, l'IP doit être 0.0.0.0 pour exposer le port.
+    host = os.environ.get("GRADIO_SERVER_NAME", "127.0.0.1")
     demo.launch(
         share=False,
-        server_name="0.0.0.0",
-        server_port=7860
+        server_name=host,
+        server_port=7860,
+        theme=custom_theme
     )

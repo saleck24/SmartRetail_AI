@@ -55,7 +55,7 @@ docker-compose up --build
 - **Dashboard :** `http://localhost:8501`
 - **Predictor (Branché sur l'API) :** `http://localhost:7860`
 
----
+
 
 ## 🏢 Architecture du Projet
 ```text

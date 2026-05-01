@@ -4,6 +4,9 @@ import pandas as pd
 import joblib
 import os
 from datetime import datetime
+import secrets
+from fastapi import FastAPI, HTTPException, Security, Depends, status
+from fastapi.security import APIKeyHeader
 
 app = FastAPI(
     title="ERP AI Stock Predictor API",
@@ -37,6 +40,24 @@ def load_assets():
         print(f"ERROR: Impossible de charger les jours feries: {e}")
 
 # ---------------------------
+# SECURITY (DYNAMIC API KEYS)
+# ---------------------------
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+# In-memory store for dynamic API keys.
+# On initialise avec une clé par défaut pour faciliter le test initial.
+valid_api_keys = {os.environ.get("DEFAULT_API_KEY", "secret-token-123")}
+
+def get_api_key(api_key: str = Security(api_key_header)):
+    if api_key in valid_api_keys:
+        return api_key
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Clé API manquante ou invalide",
+    )
+
+# ---------------------------
 # SCHEMAS
 # ---------------------------
 class PredictionRequest(BaseModel):
@@ -54,6 +75,13 @@ class PredictionResponse(BaseModel):
 # ---------------------------
 # ENDPOINTS
 # ---------------------------
+@app.post("/auth/generate-key")
+def generate_api_key():
+    """Génère une nouvelle clé API dynamique et l'autorise"""
+    new_key = secrets.token_urlsafe(32)
+    valid_api_keys.add(new_key)
+    return {"api_key": new_key, "message": "Nouvelle clé générée avec succès. Gardez-la en sécurité pour vos requêtes."}
+
 @app.get("/")
 def read_root():
     return {"message": "Bienvenue sur l'API ERP AI Stock Predictor"}
@@ -63,7 +91,7 @@ def health_check():
     return {"status": "ok", "model_loaded": model is not None}
 
 @app.post("/predict", response_model=PredictionResponse)
-def predict_stock(request: PredictionRequest):
+def predict_stock(request: PredictionRequest, api_key: str = Depends(get_api_key)):
     if model is None:
         raise HTTPException(status_code=503, detail="Modèle non disponible. Veuillez entraîner le modèle d'abord.")
 
