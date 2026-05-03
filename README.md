@@ -8,7 +8,7 @@ Le projet **SmartRetail AI** est une solution de gestion de chaîne logistique a
 ## 📊 Dataset : Corporación Favorita (Kaggle)
 Le projet s'appuie sur le dataset de référence de la chaîne équatorienne **Corporación Favorita**.
 - **Volume :** Plus de 125 millions d'enregistrements.
-- **Entraînement :** Réalisé sur le dataset intégral via un Cloud Privé (Kaggle GPU) pour une précision statistique maximale.
+- **Entraînement :** Réalisé sur le dataset intégral via le Cloud (**Google Colab GPU**) avec optimisation Optuna pour une précision statistique maximale.
 - **Lien :** [Favorita Grocery Sales Forecasting](https://www.kaggle.com/competitions/favorita-grocery-sales-forecasting)
 
 ---
@@ -57,19 +57,76 @@ Nous avons mené un benchmark exhaustif comparant 4 architectures sur des métri
 
 ---
 
-## 🏢 Architecture du Projet
-```text
-SmartRetail_AI/
-├── frontend/               # Interface React (Vite, Recharts, Framer Motion)
-├── api/                    # Backend FastAPI (Sécurisé via X-API-Key)
-├── notebooks/              # Scripts d'entraînement Kaggle et EDA
-├── models/                 # Modèles LightGBM sauvegardés (.pkl)
-├── rapport.md              # Rapport de soutenance (Master SI)
-├── IA_Justifications.md    # Justifications scientifiques détaillées
-└── docker-compose.yml      # Orchestration Microservices
+## 🏢 Architecture du Système
+Le projet repose sur une architecture en microservices séparant l'intelligence (IA) de l'interface utilisateur (UI), garantissant scalabilité et sécurité.
+
+```mermaid
+graph TD
+    subgraph "Frontend (UI)"
+        A[React App / Vite] -->|Requêtes REST + X-API-Key| B[Backend FastAPI]
+    end
+
+    subgraph "Backend (Intelligence)"
+        B -->|Chargement .pkl| C[Modèle LightGBM]
+        B -->|Metadata| D[model_metadata.json]
+        B -->|Données| E[holidays_events.csv]
+    end
+
+    subgraph "Phase d'Entraînement (Cloud)"
+        F[Google Colab GPU] -->|Export| C
+        F -->|Export| D
+        G[(Dataset Kaggle 125M)] -->|Training| F
+    end
 ```
+
+### Détails des Composants & Connexions
+
+1.  **Frontend (React + Vite) :** 
+    - Situé dans `/frontend`.
+    - Communique avec le backend via des appels `fetch/axios` sécurisés.
+    - Gère l'état global et les visualisations dynamiques (Recharts).
+
+2.  **Backend (FastAPI) :**
+    - Situé dans `/api/main.py`.
+    - **Sécurité :** Vérifie le header `X-API-Key` pour chaque requête sensible.
+    - **CORS :** Configuré pour accepter les requêtes provenant du domaine frontend.
+    - **Inférence :** Charge le modèle LightGBM en mémoire au démarrage pour des prédictions ultra-rapides (<1ms).
+
+3.  **Modèles & Artefacts :**
+    - `models/lightgbm_full_model.pkl` : Le cerveau entraîné.
+    - `models/model_metadata.json` : Contient les noms des colonnes et les hyperparamètres Optuna.
+
+4.  **Connexions :**
+    - **Frontend → Backend :** API REST (Port 8000).
+    - **Backend → Models :** Chargement direct via `joblib`.
+    - **Colab → Local :** Les modèles sont entraînés sur Colab puis téléchargés localement.
+
+## 🧠 Logique Fonctionnelle
+
+### 1. Moteur de Prédiction (IA)
+L'API FastAPI (`/predict`) reçoit les données dynamiques du produit. Le processus d'inférence suit ces étapes :
+- **Prétraitement :** Extraction des features temporelles (mois, jour de la semaine, weekend, jour férié).
+- **Inférence :** Le modèle **LightGBM** calcule la demande attendue basée sur l'historique (`sales_lag_7`) et la tendance (`rolling_mean_7`).
+- **Post-traitement :** Conversion du score flottant en unités entières positives.
+
+### 2. Dashboard & Monitoring (BI)
+L'interface React centralise les flux de données via l'endpoint `/kpis` :
+- **Performance :** Affichage du taux de précision du modèle (R²) et des erreurs moyennes.
+- **Visualisation :** Graphiques interactifs (Recharts) montrant les tendances de ventes historiques vs prédictions.
+- **Réalisme :** Les données simulent un environnement de production avec des mises à jour en temps réel.
+
+### 3. Gestion intelligente des Stocks (Alerting)
+La logique métier est déportée dans l'algorithme d'alerte (`/alerts`) :
+- **Comparaison :** Le système compare `Stock Physique` vs `Demande IA Prédite`.
+- **Classification :**
+    - **RUPTURE :** Si `Stock < Demande`.
+    - **FLUX TENDU :** Si `Stock` est proche de la `Demande` (seuil de sécurité).
+    - **SURSTOCK :** Si `Stock` dépasse largement la `Demande` (optimisation du fonds de roulement).
+- **Notification :** Les alertes critiques sont immédiatement poussées vers le dashboard pour action immédiate.
+
+
 
 ---
 
 ## 👨‍🎓 Contexte Académique
-Projet réalisé en Master SI. Il démontre l'industrialisation d'un modèle de Machine Learning (LightGBM) au sein d'une architecture logicielle moderne (React/FastAPI) pour résoudre une problématique critique de la grande distribution.
+Projet réalisé dans le cadre du Module IA pour la première année du Master SI. Il démontre l'industrialisation d'un modèle de Machine Learning (LightGBM) au sein d'une architecture logicielle moderne (React/FastAPI) pour résoudre une problématique critique de la grande distribution.
