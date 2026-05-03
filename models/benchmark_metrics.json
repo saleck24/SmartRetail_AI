@@ -1,0 +1,67 @@
+{
+  "best_params_lgbm": {
+    "n_estimators": 357,
+    "learning_rate": 0.0451912543410643,
+    "num_leaves": 52,
+    "max_depth": 10,
+    "min_child_samples": 96,
+    "subsample": 0.7960159296267891,
+    "colsample_bytree": 0.6868886137340361,
+    "reg_alpha": 0.10628075795493262,
+    "reg_lambda": 1.213480828873812e-07
+  },
+  "results": [
+    {
+      "Modèle": "Linear Regression (Baseline)",
+      "MAE": 4.7998,
+      "RMSE": 19.0954,
+      "MAPE (%)": 84.68,
+      "SMAPE (%)": 49.76,
+      "RMSLE": 0.5555,
+      "R²": 0.5345,
+      "Stockout Rate (%)": 39.14,
+      "Overstock Rate (%)": 48.91,
+      "Train Time (s)": 2.46,
+      "Inference (ms)": 0.0
+    },
+    {
+      "Modèle": "XGBoost",
+      "MAE": 4.5279,
+      "RMSE": 19.6931,
+      "MAPE (%)": 80.48999786376953,
+      "SMAPE (%)": 47.7400016784668,
+      "RMSLE": 0.5349000096321106,
+      "R²": 0.5049,
+      "Stockout Rate (%)": 40.27,
+      "Overstock Rate (%)": 47.16,
+      "Train Time (s)": 41.01,
+      "Inference (ms)": 0.0
+    },
+    {
+      "Modèle": "LightGBM + Optuna (Principal)",
+      "MAE": 4.4665,
+      "RMSE": 19.1053,
+      "MAPE (%)": 80.85,
+      "SMAPE (%)": 47.83,
+      "RMSLE": 0.5345,
+      "R²": 0.534,
+      "Stockout Rate (%)": 40.22,
+      "Overstock Rate (%)": 47.32,
+      "Train Time (s)": 206.83,
+      "Inference (ms)": 0.02
+    },
+    {
+      "Modèle": "LSTM (Bonus Deep Learning)",
+      "MAE": 4.4857,
+      "RMSE": 19.9372,
+      "MAPE (%)": 76.41999816894531,
+      "SMAPE (%)": 48.040000915527344,
+      "RMSLE": 0.5296000242233276,
+      "R²": 0.4925,
+      "Stockout Rate (%)": 42.83,
+      "Overstock Rate (%)": 44.81,
+      "Train Time (s)": 54.12,
+      "Inference (ms)": 0.0
+    }
+  ]
+}

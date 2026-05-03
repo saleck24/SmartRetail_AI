@@ -22,3 +22,7 @@ __pycache__/
 # IDE settings
 .vscode/
 .idea/
+
+# Documents à ne pas push
+IA_Justifications.md
+presentation.md
