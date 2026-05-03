@@ -95,7 +95,7 @@ def generate_api_key():
 
 @app.get("/")
 def read_root():
-    return {"message": "Bienvenue sur l'API ERP Intelligent — Prédiction de Demande LightGBM", "version": "2.0.0"}
+    return {"message": "Bienvenue sur l'API SmartRetail AI — Prédiction de Demande LightGBM", "version": "2.0.0"}
 
 @app.get("/health")
 def health_check():

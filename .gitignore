@@ -23,6 +23,6 @@ __pycache__/
 .vscode/
 .idea/
 
-# Documents à ne pas push
+# Documents à ne pas push (Confidentialité Soutenance)
 IA_Justifications.md
 presentation.md

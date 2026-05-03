@@ -59,7 +59,7 @@ Nous avons mené un benchmark exhaustif comparant 4 architectures sur des métri
 
 ## 🏢 Architecture du Projet
 ```text
-erp_ai_stock_prediction/
+SmartRetail_AI/
 ├── frontend/               # Interface React (Vite, Recharts, Framer Motion)
 ├── api/                    # Backend FastAPI (Sécurisé via X-API-Key)
 ├── notebooks/              # Scripts d'entraînement Kaggle et EDA
