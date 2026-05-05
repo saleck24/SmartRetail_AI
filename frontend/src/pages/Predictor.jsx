@@ -95,11 +95,11 @@ export default function Predictor() {
       <div className="alert-box info" style={{ marginBottom: 24 }}>
         <span className="alert-icon">🤖</span>
         <div>
-          <div className="alert-title">Modèle LightGBM — Architecture ERP</div>
+          <div className="alert-title">Modèle LightGBM — Architecture SmartRetail_AI</div>
           <div className="alert-msg">
             Le moteur de prédiction est exposé via l'API FastAPI sécurisée (X-API-Key). 
             Le frontend envoie les features en JSON et reçoit la demande prédite en ms.
-            La décision ERP (alerte rupture / commande) est calculée en combinant la prédiction IA et le stock physique actuel.
+            La décision SmartRetail_AI (alerte rupture / commande) est calculée en combinant la prédiction IA et le stock physique actuel.
           </div>
         </div>
       </div>
@@ -228,7 +228,7 @@ export default function Predictor() {
                 width: '100%', textAlign: 'left',
               }}>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                  Analyse ERP
+                  Analyse SmartRetail_AI
                 </div>
                 {[
                   { label: 'Stock Actuel', value: `${result.stock} unités` },

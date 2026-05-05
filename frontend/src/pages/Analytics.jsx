@@ -46,7 +46,7 @@ const BENCHMARK = [
     'Overstock Rate (%)': 47.16,
     'Train Time (s)': 41.01,
     'Inference (ms)': 0.00,
-    note: 'Précis mais plus lent que LightGBM. Consomme plus de RAM. Moins adapté aux ERP temps-réel.',
+    note: 'Précis mais plus lent que LightGBM. Consomme plus de RAM. Moins adapté au temps-réel.',
   },
   {
     model: 'LightGBM + Optuna',
@@ -125,13 +125,13 @@ const METRICS_GROUPS = [
     lowerIsBetter: false,
   },
   {
-    title: 'Métriques Opérationnelles ERP',
+    title: 'Métriques Opérationnelles SmartRetail_AI',
     description: 'Métriques directement liées à l\'impact business. Les plus importantes pour justifier le choix du modèle en production.',
     metrics: [
       { key: 'Stockout Rate (%)', label: 'Taux Rupture (%)', desc: 'Fréquence des sous-prédictions → risque de rupture non détectée. MINIMISER.' },
       { key: 'Overstock Rate (%)', label: 'Taux Sur-Stock (%)', desc: 'Fréquence des sur-prédictions excessives → immobilisation de capital. MINIMISER.' },
       { key: 'Train Time (s)', label: 'Temps Entraîn. (s)', desc: 'Scalabilité — essentiel pour ré-entraînement quotidien sur des milliers de produits.' },
-      { key: 'Inference (ms)', label: 'Inférence (ms)', desc: 'Latence API — doit être < 1ms pour un ERP temps-réel. LightGBM: 0.09ms ✓' },
+      { key: 'Inference (ms)', label: 'Inférence (ms)', desc: 'Latence API — doit être < 1ms pour un système temps-réel. LightGBM: 0.09ms ✓' },
     ],
     lowerIsBetter: true,
   },
@@ -220,7 +220,7 @@ export default function Analytics() {
 
         <div className="card">
           <div className="card-header">
-            <span className="card-title">⚙ Performance ERP (Rupture & Temps)</span>
+            <span className="card-title">⚙ Performance SmartRetail_AI (Rupture & Temps)</span>
           </div>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={220}>

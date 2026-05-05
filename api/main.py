@@ -102,12 +102,12 @@ def health_check():
     return {"status": "ok", "model_loaded": model is not None}
 
 # ---------------------------
-# ERP ENDPOINTS (pour le frontend React)
+# SmartRetail_AI ENDPOINTS (pour le frontend React)
 # ---------------------------
 
 @app.get("/kpis")
 def get_kpis():
-    """Retourne les KPIs agrégés pour le dashboard ERP."""
+    """Retourne les KPIs agrégés pour le dashboard SmartRetail_AI."""
     # En production, ces valeurs seraient calculées depuis la base de données réelle.
     # En démo, on simule des KPIs réalistes basés sur les données Favorita.
     return {
@@ -180,7 +180,15 @@ def predict_stock(request: PredictionRequest, api_key: str = Depends(get_api_key
         'is_weekend': [is_weekend],
         'is_holiday': [is_holiday],
         'sales_lag_7': [request.sales_lag_7],
-        'sales_rolling_mean_7': [request.sales_rolling_mean_7]
+        'sales_lag_14': [request.sales_lag_7 * 0.95],
+        'sales_lag_28': [request.sales_lag_7 * 0.9],
+        'sales_roll_mean_7': [request.sales_rolling_mean_7],
+        'sales_roll_mean_14': [request.sales_rolling_mean_7 * 0.95],
+        'sales_roll_std_7': [request.sales_rolling_mean_7 * 0.1],
+        'store_type': [1],
+        'store_cluster': [1],
+        'item_family': [1],
+        'oil_price': [45.0]
     })
 
     try:

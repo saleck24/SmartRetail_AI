@@ -7,9 +7,9 @@ import os
 # ---------------------------
 # CONFIG PAGE
 # ---------------------------
-st.set_page_config(page_title="App ERP Stock - Favorita", layout="wide", page_icon="📊")
+st.set_page_config(page_title="SmartRetail AI - Favorita", layout="wide", page_icon="📊")
 
-st.title("📊 ERP Dashboard Intelligent (Favorita)")
+st.title("📊 SmartRetail AI Dashboard (Favorita)")
 st.markdown("Analyse des tendances de ventes réelles d'une chaîne de supermarchés (Équateur).")
 
 # ---------------------------

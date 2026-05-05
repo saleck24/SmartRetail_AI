@@ -71,7 +71,7 @@ export default function Sidebar() {
         <div className="sidebar-user">
           <div className="sidebar-avatar">SB</div>
           <div className="sidebar-user-info">
-            <div className="sidebar-user-name">Gestionnaire ERP</div>
+            <div className="sidebar-user-name">Gestionnaire SmartRetail_AI</div>
             <div className="sidebar-user-role">Saleck BAYA · Administrateur</div>
           </div>
         </div>

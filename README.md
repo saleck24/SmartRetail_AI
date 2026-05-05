@@ -13,7 +13,7 @@ Le projet s'appuie sur le dataset de référence de la chaîne équatorienne **C
 
 ---
 
-## 🚀 Fonctionnalités ERP (4 Modules)
+## 🚀 Fonctionnalités SmartRetail_AI (4 Modules)
 L'interface **React (Vite)** premium propose quatre modules métiers :
 1.  **Dashboard :** Surveillance en temps réel des KPIs, ventes et alertes critiques.
 2.  **Gestion des Stocks :** Suivi des niveaux de couverture et alertes intelligentes de rupture.

@@ -2,7 +2,7 @@
 
 ## 1. Introduction et Problématique
 
-Le projet **SmartRetail AI** est une solution de gestion de chaîne logistique assistée par Intelligence Artificielle. Contrairement aux systèmes ERP traditionnels qui se basent sur des seuils de réapprovisionnement statiques, ce projet intègre un moteur prédictif **LightGBM** pour anticiper la demande future et optimiser les niveaux de stock en temps réel.
+Le projet **SmartRetail AI** est une solution de gestion de chaîne logistique assistée par Intelligence Artificielle. Contrairement aux systèmes de gestion traditionnels qui se basent sur des seuils de réapprovisionnement statiques, ce projet intègre un moteur prédictif **LightGBM** pour anticiper la demande future et optimiser les niveaux de stock en temps réel.
 
 
 ## 2. Méthodologie et Traitement des Données (Machine Learning)
@@ -27,7 +27,7 @@ Nous avons soumis 4 architectures à un benchmark rigoureux sur **14 métriques 
 **Justification du choix LightGBM :**
 C'est le modèle offrant le **meilleur compromis opérationnel**. Après optimisation via Optuna, son erreur moyenne absolue (MAE) a chuté à 4.46 articles, ce qui est extrêmement précis pour de la grande distribution. De plus, sa latence d'inférence (0.02ms) permet un usage temps-réel extrêmement fluide pour une intégration API.
 
-## 4. Architecture logicielle : Du Prototype au Produit ERP
+## 4. Architecture logicielle : Du Prototype au Produit SmartRetail_AI
 
 Le projet est passé d'une phase de prototypage (Gradio/Streamlit) à une architecture **Multi-Modules Production-Ready** :
 

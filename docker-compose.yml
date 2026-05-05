@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    container_name: erp_api
+    container_name: smart_retail_api
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -16,14 +16,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dashboard
-    container_name: erp_streamlit
+    container_name: smart_retail_streamlit
     ports:
       - "8501:8501"
     restart: unless-stopped
     volumes:
       - ./dashboard:/app/dashboard
       - ./data:/app/data
-    command: ["streamlit", "run", "dashboard/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    command: [ "streamlit", "run", "dashboard/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0" ]
     depends_on:
       - api
 
@@ -31,7 +31,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dashboard
-    container_name: erp_gradio
+    container_name: smart_retail_gradio
     ports:
       - "7860:7860"
     restart: unless-stopped
@@ -39,7 +39,7 @@ services:
       - ./dashboard:/app/dashboard
       - ./models:/app/models
       - ./data:/app/data
-    command: ["python", "dashboard/predictor.py"]
+    command: [ "python", "dashboard/predictor.py" ]
     # On précise des variables d'environnement si l'on adapte predictor.py pour utiliser l'API
     environment:
       - API_URL=http://api:8000/predict

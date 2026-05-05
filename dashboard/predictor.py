@@ -84,7 +84,15 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
             'is_weekend': [is_weekend],
             'is_holiday': [is_holiday],
             'sales_lag_7': [sales_lag_7],
-            'sales_rolling_mean_7': [sales_rolling_mean_7]
+            'sales_lag_14': [sales_lag_7 * 0.95],
+            'sales_lag_28': [sales_lag_7 * 0.9],
+            'sales_roll_mean_7': [sales_rolling_mean_7],
+            'sales_roll_mean_14': [sales_rolling_mean_7 * 0.95],
+            'sales_roll_std_7': [sales_rolling_mean_7 * 0.1],
+            'store_type': [1],
+            'store_cluster': [1],
+            'item_family': [1],
+            'oil_price': [45.0]
         })
         
         pred = model.predict(input_data)[0]
@@ -113,7 +121,7 @@ def predict_stock(date, store_selection, product_selection, sales_lag_7, sales_r
     
     html_report = f"""
     <div style="border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background-color: #f9f9f9; text-align: center;">
-        <h2 style="margin-top: 0; color: #333;">💡 Recommandation ERP</h2>
+        <h2 style="margin-top: 0; color: #333;">💡 Recommandation SmartRetail AI</h2>
         <p style="font-size: 16px; color: #555;">Prévision de l'IA pour le <b style="color: #333;">{formatted_date}</b> :</p>
         <h1 style="color: #007bff; font-size: 40px; margin: 10px 0;">{expected_demand} unités</h1>
         
@@ -148,13 +156,13 @@ custom_theme = gr.themes.Soft(
     button_primary_background_fill_hover="*primary_600",
 )
 
-with gr.Blocks(title="Pro ERP AI Predictor") as demo:
+with gr.Blocks(title="SmartRetail AI Predictor", theme=custom_theme) as demo:
     
     # En-tête
     gr.HTML(
         """
         <div style="text-align: center; padding: 20px; background-color: #0b1f38; border-radius: 10px; margin-bottom: 20px;">
-            <h1 style="color: white; margin: 0;">🤖 ERP AI Predictor Pro</h1>
+            <h1 style="color: white; margin: 0;">🤖 SmartRetail AI Predictor</h1>
             <p style="color: #a0aec0; margin-top: 5px; font-size: 16px;">Analyse LightGBM des stocks corporatifs (Favorita Dataset)</p>
         </div>
         """
@@ -202,9 +210,9 @@ with gr.Blocks(title="Pro ERP AI Predictor") as demo:
                 ### 🏗️ Architecture du Modèle Prédictif
                 Ce Predictor utilise un modèle **LightGBM (Gradient Boosting Machine)** performant pour la régression.
                 
-                - **Données d'entraînement** : Échantillon représentatif de **1 million de lignes** de transactions réelles (Corporación Favorita, année 2017) pour garantir un apprentissage rapide et performant.
+                - **Données d'entraînement** : Entraîné sur l'intégralité du dataset Corporación Favorita (**Plus de 125 millions de lignes**) via **Google Colab GPU** avec optimisation **Optuna**.
                 - **Features principales** : Saisonnalité (Mois, Jour J/F), Jours Fériés nationaux, Ventes Lag et Moyennes Mobiles (7 jours).
-                - **Objectif** : Anticiper la demande exacte afin de réduire les coûts de stockage inutiles et de prévenir les ruptures dommageables au chiffre d'affaires.
+                - **Objectif** : Anticiper la demande exacte afin d'optimiser les stocks, de réduire les coûts inutiles et de prévenir les ruptures dommageables au chiffre d'affaires pour le système SmartRetail AI.
                 """
             )
 
@@ -222,6 +230,5 @@ if __name__ == "__main__":
     demo.launch(
         share=False,
         server_name=host,
-        server_port=7860,
-        theme=custom_theme
+        server_port=7860
     )

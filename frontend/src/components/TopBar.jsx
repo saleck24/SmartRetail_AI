@@ -10,7 +10,7 @@ const PAGE_META = {
 
 export default function TopBar() {
   const location = useLocation();
-  const meta = PAGE_META[location.pathname] || { title: 'ERP', subtitle: '' };
+  const meta = PAGE_META[location.pathname] || { title: 'SmartRetail_AI', subtitle: '' };
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
