@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 # Rapport de Soutenance : SmartRetail AI — Système de Prédiction IA
 
 ## 1. Introduction et Problématique

@@ -1,7 +1,7 @@
-# 🛒 SmartRetail AI : Optimisation Intelligente des Stocks
+# 🛒 SmartRetail AI : Prédiction de Demande et Optimisation Intelligente des Stocks
 **Systèmes d'Information (IA et Business Intelligence)**
 
-Le projet **SmartRetail AI** est une solution de gestion de chaîne logistique assistée par Intelligence Artificielle. Il transforme un ERP traditionnel en un système proactif capable d'anticiper la demande future, d'optimiser les stocks et de prévenir les ruptures grâce à un moteur prédictif **LightGBM** entraîné sur le Big Data (125M+ lignes).
+Le projet **SmartRetail AI** est une solution de prédiction de demande et d'optimisation de la chaîne logistique assistée par Intelligence Artificielle. Il transforme un ERP traditionnel en un système proactif capable d'anticiper la demande future, d'optimiser les stocks et de prévenir les ruptures grâce à un moteur prédictif **LightGBM** entraîné sur le Big Data (125M+ lignes).
 
 ---
 
@@ -13,12 +13,13 @@ Le projet s'appuie sur le dataset de référence de la chaîne équatorienne **C
 
 ---
 
-## 🚀 Fonctionnalités SmartRetail_AI (4 Modules)
-L'interface **React (Vite)** premium propose quatre modules métiers :
+## 🚀 Fonctionnalités SmartRetail_AI (5 Modules)
+L'interface **React (Vite)** premium propose cinq modules métiers :
 1.  **Dashboard :** Surveillance en temps réel des KPIs, ventes et alertes critiques.
 2.  **Gestion des Stocks :** Suivi des niveaux de couverture et alertes intelligentes de rupture.
 3.  **Prédictions IA :** Moteur d'inférence LightGBM pour simuler la demande et recommander des commandes.
 4.  **Analytics (Benchmark) :** Visualisation scientifique du benchmark multi-modèles (14 métriques).
+5.  **Rapport & Benchmark:** Comparaison des performances de plusieurs modèles (Linear Regression, XGBoost, LightGBM, LSTM).
 
 ---
 
